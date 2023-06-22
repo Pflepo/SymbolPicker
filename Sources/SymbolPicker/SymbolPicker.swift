@@ -172,7 +172,11 @@ public struct SymbolPicker: View {
                                 .frame(maxWidth: .infinity, minHeight: Self.gridDimension)
                                 #endif
                                 .background(Self.selectedItemBackgroundColor)
+                                #if os(xrOS)
+                                .clipShape(Circle())
+                                #else
                                 .cornerRadius(Self.symbolCornerRadius)
+                                #endif
                                 .foregroundColor(.white)
                         } else {
                             Image(systemName: thisSymbol)
@@ -209,8 +213,14 @@ public struct SymbolPicker: View {
             /// tvOS can use back button on remote
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(LocalizedString("cancel")) {
+                    Button {
                         presentationMode.wrappedValue.dismiss()
+                    } label: {
+                        #if os(xrOS)
+                        Image(systemName: "xmark")
+                        #else
+                        Text(LocalizedString("cancel"))
+                        #endif
                     }
                 }
             }
