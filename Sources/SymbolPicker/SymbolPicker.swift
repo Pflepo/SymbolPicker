@@ -9,7 +9,6 @@ import SwiftUI
 
 /// A simple and cross-platform SFSymbol picker for SwiftUI.
 public struct SymbolPicker: View {
-
     // MARK: - Static consts
 
     private static var symbols: [String] {
@@ -52,32 +51,26 @@ public struct SymbolPicker: View {
         #endif
     }
 
-    private static var unselectedItemBackgroundColor: Color {
-        #if os(iOS)
-        return Color(UIColor.systemBackground)
-        #else
-        return .clear
-        #endif
-    }
+    #if os(iOS)
+    private let unselectedItemBackgroundColor: Color
+    #else
+    private let unselectedItemBackgroundColor: Color
+    #endif
 
-    private static var selectedItemBackgroundColor: Color {
-        #if os(tvOS)
-        return Color.gray.opacity(0.3)
-        #else
-        return Color.accentColor
-        #endif
-    }
+    #if os(tvOS)
+    private let selectedItemBackgroundColor: Color
+    #else
+    private let selectedItemBackgroundColor: Color
+    #endif
 
-    private static var backgroundColor: Color {
-        #if os(iOS)
-        return Color(UIColor.systemGroupedBackground)
-        #else
-        return .clear
-        #endif
-    }
+    #if os(iOS)
+    private let backgroundColor: Color
+    #else
+    private let backgroundColor: Color
+    #endif
 
     // MARK: - Properties
-    
+
     @Binding public var symbol: String?
     @State private var searchText = ""
     @Environment(\.dismiss) private var dismiss
@@ -89,9 +82,14 @@ public struct SymbolPicker: View {
     /// Initializes `SymbolPicker` with a string binding that captures the raw value of
     /// user-selected SFSymbol.
     /// - Parameter symbol: String binding to store user selection.
-    public init(symbol: Binding<String>) {
+    public init(
+        symbol: Binding<String>,
+        backgroundColor: Color? = nil,
+        selectedItemBackgroundColor: Color? = nil,
+        unselectedItemBackgroundColor: Color? = nil
+    ) {
         _symbol = Binding {
-            return symbol.wrappedValue
+            symbol.wrappedValue
         } set: { newValue in
             /// As the `nullable` is set to `false`, this can not be `nil`
             if let newValue {
@@ -99,14 +97,79 @@ public struct SymbolPicker: View {
             }
         }
         nullable = false
+
+        if let backgroundColor {
+            self.backgroundColor = backgroundColor
+        } else {
+            #if os(iOS)
+            self.backgroundColor = .init(UIColor.systemGroupedBackground)
+            #else
+            self.backgroundColor = .clear
+            #endif
+        }
+
+        if let selectedItemBackgroundColor {
+            self.selectedItemBackgroundColor = selectedItemBackgroundColor
+        } else {
+            #if os(tvOS)
+            self.selectedItemBackgroundColor = .gray.opacity(0.3)
+            #else
+            self.selectedItemBackgroundColor = .accentColor
+            #endif
+        }
+
+        if let unselectedItemBackgroundColor {
+            self.unselectedItemBackgroundColor = unselectedItemBackgroundColor
+        } else {
+            #if os(iOS)
+            self.unselectedItemBackgroundColor = .init(UIColor.systemBackground)
+            #else
+            self.unselectedItemBackgroundColor = .clear
+            #endif
+        }
     }
 
     /// Initializes `SymbolPicker` with a nullable string binding that captures the raw value of
     /// user-selected SFSymbol. `nil` if no symbol is selected.
     /// - Parameter symbol: Optional string binding to store user selection.
-    public init(symbol: Binding<String?>) {
+    public init(
+        symbol: Binding<String?>,
+        backgroundColor: Color? = nil,
+        selectedItemBackgroundColor: Color? = nil,
+        unselectedItemBackgroundColor: Color? = nil
+    ) {
         _symbol = symbol
         nullable = true
+
+        if let backgroundColor {
+            self.backgroundColor = backgroundColor
+        } else {
+            #if os(iOS)
+            self.backgroundColor = .init(UIColor.systemGroupedBackground)
+            #else
+            self.backgroundColor = .clear
+            #endif
+        }
+
+        if let selectedItemBackgroundColor {
+            self.selectedItemBackgroundColor = selectedItemBackgroundColor
+        } else {
+            #if os(tvOS)
+            self.selectedItemBackgroundColor = .gray.opacity(0.3)
+            #else
+            self.selectedItemBackgroundColor = .accentColor
+            #endif
+        }
+
+        if let unselectedItemBackgroundColor {
+            self.unselectedItemBackgroundColor = unselectedItemBackgroundColor
+        } else {
+            #if os(iOS)
+            self.unselectedItemBackgroundColor = .init(UIColor.systemBackground)
+            #else
+            self.unselectedItemBackgroundColor = .clear
+            #endif
+        }
     }
 
     // MARK: - View Components
@@ -185,26 +248,26 @@ public struct SymbolPicker: View {
                         if thisSymbol == symbol {
                             Image(systemName: thisSymbol)
                                 .font(.system(size: Self.symbolSize))
-                                #if os(tvOS)
+                            #if os(tvOS)
                                 .frame(minWidth: Self.gridDimension, minHeight: Self.gridDimension)
-                                #else
+                            #else
                                 .frame(maxWidth: .infinity, minHeight: Self.gridDimension)
-                                #endif
-                                .background(Self.selectedItemBackgroundColor)
+                            #endif
+                                .background(selectedItemBackgroundColor)
                                 .cornerRadius(Self.symbolCornerRadius)
                                 .foregroundColor(.white)
                         } else {
                             Image(systemName: thisSymbol)
                                 .font(.system(size: Self.symbolSize))
                                 .frame(maxWidth: .infinity, minHeight: Self.gridDimension)
-                                .background(Self.unselectedItemBackgroundColor)
+                                .background(unselectedItemBackgroundColor)
                                 .cornerRadius(Self.symbolCornerRadius)
                                 .foregroundColor(.primary)
                         }
                     }
                     .buttonStyle(.plain)
                     #if os(iOS)
-                    .hoverEffect(.lift)
+                        .hoverEffect(.lift)
                     #endif
                 }
             }
@@ -226,14 +289,14 @@ public struct SymbolPicker: View {
             dismiss()
         } label: {
             Label(LocalizedString("remove_symbol"), systemImage: "trash")
-                #if !os(tvOS) && !os(macOS)
+            #if !os(tvOS) && !os(macOS)
                 .frame(maxWidth: .infinity)
-                #endif
-                #if !os(watchOS)
-                .padding(.vertical, 12.0)
-                #endif
-                .background(Self.unselectedItemBackgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 12.0, style: .continuous))
+            #endif
+            #if !os(watchOS)
+            .padding(.vertical, 12.0)
+            #endif
+            .background(unselectedItemBackgroundColor)
+            .clipShape(RoundedRectangle(cornerRadius: 12.0, style: .continuous))
         }
     }
 
@@ -242,7 +305,7 @@ public struct SymbolPicker: View {
         NavigationView {
             ZStack {
                 #if os(iOS)
-                Self.backgroundColor.edgesIgnoringSafeArea(.all)
+                backgroundColor.edgesIgnoringSafeArea(.all)
                 #endif
                 searchableSymbolGrid
 
@@ -283,7 +346,6 @@ public struct SymbolPicker: View {
     private var canDeleteIcon: Bool {
         nullable && symbol != nil
     }
-
 }
 
 private func LocalizedString(_ key: String) -> String {
