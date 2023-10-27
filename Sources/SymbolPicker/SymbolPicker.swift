@@ -96,7 +96,7 @@ public struct SymbolPicker: View {
                 symbol.wrappedValue = newValue
             }
         }
-        nullable = false
+        self.nullable = false
 
         if let backgroundColor {
             self.backgroundColor = backgroundColor
@@ -139,7 +139,7 @@ public struct SymbolPicker: View {
         unselectedItemBackgroundColor: Color? = nil
     ) {
         _symbol = symbol
-        nullable = true
+        self.nullable = true
 
         if let backgroundColor {
             self.backgroundColor = backgroundColor
@@ -177,15 +177,15 @@ public struct SymbolPicker: View {
     @ViewBuilder
     private var searchableSymbolGrid: some View {
         #if os(iOS)
-        symbolGrid
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+        self.symbolGrid
+            .searchable(text: self.$searchText, placement: .navigationBarDrawer(displayMode: .always))
         #elseif os(tvOS)
         VStack {
-            TextField(LocalizedString("search_placeholder"), text: $searchText)
+            TextField(LocalizedString("search_placeholder"), text: self.$searchText)
                 .padding(.horizontal, 8)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
-            symbolGrid
+            self.symbolGrid
         }
 
         /// `searchable` is crashing on tvOS 16. What the hell aPPLE?
@@ -195,13 +195,13 @@ public struct SymbolPicker: View {
         #elseif os(macOS)
         VStack(spacing: 0) {
             HStack {
-                TextField(LocalizedString("search_placeholder"), text: $searchText)
+                TextField(LocalizedString("search_placeholder"), text: self.$searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 18.0))
                     .disableAutocorrection(true)
 
                 Button {
-                    dismiss()
+                    self.dismiss()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .resizable()
@@ -213,39 +213,39 @@ public struct SymbolPicker: View {
 
             Divider()
 
-            symbolGrid
+            self.symbolGrid
 
-            if canDeleteIcon {
+            if self.canDeleteIcon {
                 Divider()
                 HStack {
                     Spacer()
-                    deleteButton
+                    self.deleteButton
                         .padding(.horizontal)
                         .padding(.vertical, 8.0)
                 }
             }
         }
         #else
-        symbolGrid
-            .searchable(text: $searchText, placement: .automatic)
+        self.symbolGrid
+            .searchable(text: self.$searchText, placement: .automatic)
         #endif
     }
 
     private var symbolGrid: some View {
         ScrollView {
             #if os(tvOS) || os(watchOS)
-            if canDeleteIcon {
-                deleteButton
+            if self.canDeleteIcon {
+                self.deleteButton
             }
             #endif
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.gridDimension, maximum: Self.gridDimension))]) {
-                ForEach(Self.symbols.filter { searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(searchText) }, id: \.self) { thisSymbol in
+                ForEach(Self.symbols.filter { self.searchText.isEmpty ? true : $0.localizedCaseInsensitiveContains(self.searchText) }, id: \.self) { thisSymbol in
                     Button {
-                        symbol = thisSymbol
-                        dismiss()
+                        self.symbol = thisSymbol
+                        self.dismiss()
                     } label: {
-                        if thisSymbol == symbol {
+                        if thisSymbol == self.symbol {
                             Image(systemName: thisSymbol)
                                 .font(.system(size: Self.symbolSize))
                             #if os(tvOS)
@@ -253,14 +253,14 @@ public struct SymbolPicker: View {
                             #else
                                 .frame(maxWidth: .infinity, minHeight: Self.gridDimension)
                             #endif
-                                .background(selectedItemBackgroundColor)
+                                .background(self.selectedItemBackgroundColor)
                                 .cornerRadius(Self.symbolCornerRadius)
                                 .foregroundColor(.white)
                         } else {
                             Image(systemName: thisSymbol)
                                 .font(.system(size: Self.symbolSize))
                                 .frame(maxWidth: .infinity, minHeight: Self.gridDimension)
-                                .background(unselectedItemBackgroundColor)
+                                .background(self.unselectedItemBackgroundColor)
                                 .cornerRadius(Self.symbolCornerRadius)
                                 .foregroundColor(.primary)
                         }
@@ -275,7 +275,7 @@ public struct SymbolPicker: View {
 
             #if os(iOS)
             /// Avoid last row being hidden.
-            if canDeleteIcon {
+            if self.canDeleteIcon {
                 Spacer()
                     .frame(height: Self.gridDimension * 2)
             }
@@ -285,8 +285,8 @@ public struct SymbolPicker: View {
 
     private var deleteButton: some View {
         Button(role: .destructive) {
-            symbol = nil
-            dismiss()
+            self.symbol = nil
+            self.dismiss()
         } label: {
             Label(LocalizedString("remove_symbol"), systemImage: "trash")
             #if !os(tvOS) && !os(macOS)
@@ -295,7 +295,7 @@ public struct SymbolPicker: View {
             #if !os(watchOS)
             .padding(.vertical, 12.0)
             #endif
-            .background(unselectedItemBackgroundColor)
+            .background(self.unselectedItemBackgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: 12.0, style: .continuous))
         }
     }
@@ -305,16 +305,16 @@ public struct SymbolPicker: View {
         NavigationView {
             ZStack {
                 #if os(iOS)
-                backgroundColor.edgesIgnoringSafeArea(.all)
+                self.backgroundColor.edgesIgnoringSafeArea(.all)
                 #endif
-                searchableSymbolGrid
+                self.searchableSymbolGrid
 
                 #if os(iOS)
-                if canDeleteIcon {
+                if self.canDeleteIcon {
                     VStack {
                         Spacer()
 
-                        deleteButton
+                        self.deleteButton
                             .padding()
                             .background(.regularMaterial)
                     }
@@ -329,7 +329,7 @@ public struct SymbolPicker: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(LocalizedString("cancel")) {
-                        dismiss()
+                        self.dismiss()
                     }
                 }
             }
@@ -337,14 +337,14 @@ public struct SymbolPicker: View {
         }
         .navigationViewStyle(.stack)
         #else
-        searchableSymbolGrid
+        self.searchableSymbolGrid
             .frame(width: 540, height: 340, alignment: .center)
             .background(.regularMaterial)
         #endif
     }
 
     private var canDeleteIcon: Bool {
-        nullable && symbol != nil
+        self.nullable && self.symbol != nil
     }
 }
 
